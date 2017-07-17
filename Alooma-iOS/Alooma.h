@@ -8,31 +8,24 @@ NS_ASSUME_NONNULL_BEGIN
 
 /*!
  @class
- Mixpanel API.
+ Alooma
 
  @abstract
- The primary interface for integrating Mixpanel with your app.
+ The primary interface for integrating Alooma iossdk with your app.
 
  @discussion
- Use the Mixpanel class to set up your project and track events in Mixpanel
- Engagement. It now also includes a <code>people</code> property for accesseing
- the Mixpanel People API.
+ Use the Alooma class to track events from your mobile Application to Alooma.
 
  <pre>
  // Initialize the API
- Mixpanel *mixpanel = [Mixpanel sharedInstanceWithToken:@"YOUR API TOKEN"];
+ alooma =  [Alooma sharedInstanceWithToken:@"<token>"
+                                 serverURL:@"inputs.alooma.com"
+                               application:[UIApplication sharedApplication]];
 
- // Track an event in Mixpanel Engagement
- [mixpanel track:@"Button Clicked"];
-
- // Set properties on a user in Mixpanel People
- [mixpanel.people identify:@"CURRENT USER DISTINCT ID"];
- [mixpanel.people set:@"Plan" to:@"Premium"];
+ // Track an event
+ [alooma track:@"Button Clicked"];
  </pre>
 
- For more advanced usage, please see the <a
- href="https://mixpanel.com/docs/integration-libraries/iphone">Mixpanel iPhone
- Library Guide</a>.
  */
 @interface Alooma : NSObject
 
@@ -56,7 +49,7 @@ NS_ASSUME_NONNULL_BEGIN
  @property
 
  @abstract
- Current user's name in Mixpanel Streams.
+ Current user's name. If set, will be reported within events "properties"
  */
 @property (atomic, copy, nullable) NSString *nameTag;
 
@@ -64,11 +57,11 @@ NS_ASSUME_NONNULL_BEGIN
  @property
 
  @abstract
- The base URL used for Mixpanel API requests.
+ The base URL used for Alooma API requests.
 
  @discussion
- Useful if you need to proxy Mixpanel requests. Defaults to
- https://api.mixpanel.com.
+ Useful for custom modifications. Defaults to
+ https://inputs.alooma.com.
  */
 @property (atomic, copy) NSString *serverURL;
 
@@ -87,12 +80,12 @@ NS_ASSUME_NONNULL_BEGIN
  @property
 
  @abstract
- Control whether the library should flush data to Mixpanel when the app
+ Control whether the library should flush data to Alooma when the app
  enters the background.
 
  @discussion
- Defaults to YES. Only affects apps targeted at iOS 4.0, when background
- task support was introduced, and later.
+ Defaults to YES. Only affects apps targeted at iOS >4.0, when background
+ task support was introduced.
  */
 @property (atomic) BOOL flushOnBackground;
 
@@ -101,7 +94,7 @@ NS_ASSUME_NONNULL_BEGIN
 
  @abstract
  Controls whether to show spinning network activity indicator when flushing
- data to the Mixpanel servers.
+ data to the Alooma servers.
 
  @discussion
  Defaults to YES.
@@ -112,12 +105,11 @@ NS_ASSUME_NONNULL_BEGIN
  @property
 
  @abstract
- The a MixpanelDelegate object that can be used to assert fine-grain control
- over Mixpanel network activity.
+ The AloomaDelegate object that can be used to assert fine-grain control
+ over Alooma network activity.
 
  @discussion
- Using a delegate is optional. See the documentation for MixpanelDelegate
- below for more information.
+ Using a delegate is optional, and allows controlloing the flush behavior
  */
 @property (atomic, weak) id<AloomaDelegate> delegate; // allows fine grain control over uploading (optional)
 
@@ -130,19 +122,32 @@ NS_ASSUME_NONNULL_BEGIN
  Initializes and returns a singleton instance of the API.
 
  @discussion
- If you are only going to send data to a single Mixpanel project from your app,
+ If you are only going to send data to a single Alooma input from your app,
  as is the common case, then this is the easiest way to use the API. This
- method will set up a singleton instance of the <code>Mixpanel</code> class for
- you using the given project token. When you want to make calls to Mixpanel
+ method will set up a singleton instance of the <code>Alooma</code> class for
+ you using the given project token. When you want to make calls to Alooma
  elsewhere in your code, you can use <code>sharedInstance</code>.
 
+ To enable easy intergration of the Alooma API in normal applications as well
+ as widgets and watch apps, a modification was contributed to the Alooma
+ library, enabling it to accept a pointer to the current application. This
+ change replaces the previous method of setting the preprocessor flag
+ ALOOMA_APP_EXTENSION which would cause the Alooma API to refrain from calling
+ [UIApplication sharedApplication]. (The preprocessor flag required developers
+ to perform some inconvenient configurations to include the Alooma API in a
+ single project which compiles both an app and a widget).
+ <b>This is a breaking change</b>
+
+
  <pre>
- [Mixpanel sharedInstance] track:@"Something Happened"]];
+ [Alooma sharedInstanceWithToken:@"<token>" serverURL:@"inputs.alooma.com"
+                     application:[UIApplication sharedApplication]];
+ [Alooma sharedInstance] track:@"Something Happened"]];
  </pre>
 
  If you are going to use this singleton approach,
  <code>sharedInstanceWithToken:</code> <b>must be the first call</b> to the
- <code>Mixpanel</code> class, since it performs important initializations to
+ <code>Alooma</code> class, since it performs important initializations to
  the API.
 
  @param apiToken        your project token
@@ -156,12 +161,12 @@ NS_ASSUME_NONNULL_BEGIN
  @method
 
  @abstract
- Initializes a singleton instance of the API, uses it to track launchOptions information,
- and then returns it.
+ Initializes a singleton instance of the API, uses it to track
+ launchOptions information, and then returns it.
 
  @discussion
- This is the preferred method for creating a sharedInstance with a mixpanel
- like above. With the launchOptions parameter, Mixpanel can track referral
+ This is the preferred method for creating a sharedInstance of Alooma
+ like above. With the launchOptions parameter, Alooma can track referral
  information created by push notifications.
 
  @param apiToken        your project token
@@ -172,6 +177,7 @@ NS_ASSUME_NONNULL_BEGIN
 + (Alooma *)sharedInstanceWithToken:(NSString *)apiToken serverURL:(NSString*)url
                       launchOptions:(nullable NSDictionary *)launchOptions
                         application:(nullable UIApplication *)application;
+
 
 /*!
  @method
@@ -189,12 +195,12 @@ NS_ASSUME_NONNULL_BEGIN
  @method
 
  @abstract
- Initializes an instance of the API with the given project token.
+ Initializes an instance of the API with the given input token.
 
  @discussion
  Returns the a new API object. This allows you to create more than one instance
  of the API object, which is convenient if you'd like to send data to more than
- one Mixpanel project from a single app. If you only need to send data to one
+ one Alooma input from a single app. If you only need to send data to one
  project, consider using <code>sharedInstanceWithToken:</code>.
 
  @param apiToken        your project token
@@ -234,7 +240,7 @@ NS_ASSUME_NONNULL_BEGIN
  Sets the distinct ID of the current user.
 
  @discussion
- As of version 2.3.1, Mixpanel will choose a default distinct ID based on
+ Alooma will choose a default distinct ID based on
  whether you are using the AdSupport.framework or not.
 
  If you are not using the AdSupport Framework (iAds), then we use the
@@ -245,24 +251,13 @@ NS_ASSUME_NONNULL_BEGIN
 
  If you are showing iAds in your application, you are allowed use the iOS ID
  for Advertising (IFA) to identify users. If you have this framework in your
- app, Mixpanel will use the IFA as the default distinct ID. If you have
+ app, Alooma will use the IFA as the default distinct ID. If you have
  AdSupport installed but still don't want to use the IFA, you can define the
  <code>MIXPANEL_NO_IFA</code> preprocessor flag in your build settings, and
- Mixpanel will use the IFV as the default distinct ID.
+ Alooma will use the IFV as the default distinct ID.
 
  If we are unable to get an IFA or IFV, we will fall back to generating a
  random persistent UUID.
-
- For tracking events, you do not need to call <code>identify:</code> if you
- want to use the default.  However, <b>Mixpanel People always requires an
- explicit call to <code>identify:</code></b>. If calls are made to
- <code>set:</code>, <code>increment</code> or other <code>MixpanelPeople</code>
- methods prior to calling <code>identify:</code>, then they are queued up and
- flushed once <code>identify:</code> is called.
-
- If you'd like to use the default distinct ID for Mixpanel People as well
- (recommended), call <code>identify:</code> using the current distinct ID:
- <code>[mixpanel identify:mixpanel.distinctId]</code>.
 
  @param distinctId string that uniquely identifies the current user
  */
@@ -280,17 +275,14 @@ NS_ASSUME_NONNULL_BEGIN
 
 /*!
  @method
- 
+
  @abstract
- Arguments will allow you to segment your events in your Mixpanel reports.
- Argument keys must be <code>NSString</code> objects and values must be
- <code>NSString</code>, <code>NSNumber</code>, <code>NSNull</code>,
- <code>NSArray</code>, <code>NSDictionary</code>, <code>NSDate</code> or
- <code>NSURL</code> objects. If the event is being timed, the timer will
- stop and be added as a property.
- 
- @param customEvent           arguments dictionary
- 
+ Use this method to track events in your own custom format. The default
+ properties, and any set super-properties will be added to the dictionary under
+ the key 'properties'
+
+ @param customEvent           a JSON serializable dictionary.
+
  */
 - (void)trackCustomEvent:(NSDictionary *)customEvent;
 
@@ -298,15 +290,13 @@ NS_ASSUME_NONNULL_BEGIN
  @method
 
  @abstract
- Tracks an event with properties.
+ Tracks a custom formatted event, but also sets the "event" key
 
  @discussion
- Arguments will allow you to segment your events in your Mixpanel reports.
- Argument keys must be <code>NSString</code> objects and values must be
- <code>NSString</code>, <code>NSNumber</code>, <code>NSNull</code>,
- <code>NSArray</code>, <code>NSDictionary</code>, <code>NSDate</code> or
- <code>NSURL</code> objects. If the event is being timed, the timer will
- stop and be added as a property.
+ similarly to `trackCustomEvent`, this method also enables tracking a custom
+ object as an event, but here, two keys will be added: `event` key attached to
+ the value passed in the `event` parameter, `properties` key attached to all
+ the default properties of the event
 
  @param event           event name
  @param customEvent      properties dictionary
@@ -315,18 +305,18 @@ NS_ASSUME_NONNULL_BEGIN
 
 /*!
  @method
- 
+
  @abstract
  Tracks an event with properties.
- 
+
  @discussion
- Properties will allow you to segment your events in your Mixpanel reports.
+ Properties will allow you to segment your events in your reports.
  Property keys must be <code>NSString</code> objects and values must be
  <code>NSString</code>, <code>NSNumber</code>, <code>NSNull</code>,
  <code>NSArray</code>, <code>NSDictionary</code>, <code>NSDate</code> or
  <code>NSURL</code> objects. If the event is being timed, the timer will
  stop and be added as a property.
- 
+
  @param event           event name
  @param properties      properties dictionary
  */
@@ -416,7 +406,7 @@ NS_ASSUME_NONNULL_BEGIN
  not registered is ignored.
 
  Note that after removing a super property, events will show the attribute as
- having the value <code>undefined</code> in Mixpanel until a new value is
+ having the value <code>undefined</code> in Alooma until a new value is
  registered.
 
  @param propertyName   array of property name strings to remove
@@ -455,13 +445,13 @@ NS_ASSUME_NONNULL_BEGIN
 
  <pre>
  // begin timing the image upload
- [mixpanel timeEvent:@"Image Upload"];
+ [alooma timeEvent:@"Image Upload"];
 
  // upload the image
  [self uploadImageWithSuccessHandler:^{
 
     // track the event
-    [mixpanel track:@"Image Upload"];
+    [alooma track:@"Image Upload"];
  }];
  </pre>
 
@@ -490,10 +480,10 @@ NS_ASSUME_NONNULL_BEGIN
  @method
 
  @abstract
- Uploads queued data to the Mixpanel server.
+ Uploads queued data to the Alooma server.
 
  @discussion
- By default, queued data is flushed to the Mixpanel servers every minute (the
+ By default, queued data is flushed to the Alooma servers every minute (the
  default for <code>flushInvterval</code>), and on background (since
  <code>flushOnBackground</code> is on by default). You only need to call this
  method manually if you want to force a flush at a particular moment.
@@ -508,7 +498,7 @@ NS_ASSUME_NONNULL_BEGIN
  and People record queues to disk.
 
  @discussion
- This state will be recovered when the app is launched again if the Mixpanel
+ This state will be recovered when the app is launched again if the Alooma
  library is initialized with the same project token. <b>You do not need to call
  this method</b>. The library listens for app state changes and handles
  persisting data as needed. It can be useful in some special circumstances,
@@ -526,10 +516,10 @@ NS_ASSUME_NONNULL_BEGIN
  @protocol
 
  @abstract
- Delegate protocol for controlling the Mixpanel API's network behavior.
+ Delegate protocol for controlling the Alooma API's network behavior.
 
  @discussion
- Creating a delegate for the Mixpanel object is entirely optional. It is only
+ Creating a delegate for the Alooma object is entirely optional. It is only
  necessary when you want full control over when data is uploaded to the server,
  beyond simply calling stop: and start: before and after a particular block of
  your code.
@@ -546,7 +536,7 @@ NS_ASSUME_NONNULL_BEGIN
  @discussion
  Return YES to upload now, NO to defer until later.
 
- @param mixpanel        Mixpanel API instance
+ @param mixpanel        Alooma API instance
  */
 - (BOOL)aloomaWillFlush:(Alooma *)mixpanel;
 

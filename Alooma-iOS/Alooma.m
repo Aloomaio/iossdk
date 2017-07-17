@@ -571,7 +571,7 @@ static __unused NSString *MPURLEncode(NSString *s)
             properties[kSendingTimeKey] = @(round(epochInterval));
             [event setObject:[NSDictionary dictionaryWithDictionary:properties] forKeyedSubscript:@"properties"];
         }
-        
+
         NSString *requestData = [self encodeAPIData:batch];
         NSString *postBody = [NSString stringWithFormat:@"ip=1&data=%@", requestData];
         AloomaDebug(@"%@ flushing %lu of %lu to %@: %@", self, (unsigned long)[batch count], (unsigned long)[queue count], endpoint, queue);
@@ -838,8 +838,8 @@ static __unused NSString *MPURLEncode(NSString *s)
 {
     // wifi reachability
     BOOL reachabilityOk = NO;
-    NSURL* url = [NSURL URLWithString:self.serverURL]; 
-    NSString* host = [url host]; 
+    NSURL* url = [NSURL URLWithString:self.serverURL];
+    NSString* host = [url host];
     if ((_reachability = SCNetworkReachabilityCreateWithName(NULL, host.UTF8String)) != NULL) {
         SCNetworkReachabilityContext context = {0, (__bridge void*)self, NULL, NULL, NULL};
         if (SCNetworkReachabilitySetCallback(_reachability, AloomaReachabilityCallback, &context)) {
