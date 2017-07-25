@@ -50,7 +50,7 @@
 
 - (Alooma*)createAlooma{
     NSArray *tokens = @[@"ValidToken", @"InvalidToken"];
-    NSArray *serverURLs = @[@"https://queen-i.alooma.io", @"http://www.BadServerAddressThatsnotgonnaworkzzzzzz.com"];
+    NSArray *serverURLs = @[@"https://inputs-i.alooma-dev.com", @"http://www.BadServerAddressThatsnotgonnaworkzzzzzz.com"];
     
     return [[Alooma alloc] initWithToken:tokens[tokenSegment.selectedSegmentIndex]
                                serverURL:serverURLs[serverSegment.selectedSegmentIndex] andFlushInterval:60];

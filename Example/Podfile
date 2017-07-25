@@ -1,5 +1,5 @@
 source 'https://github.com/CocoaPods/Specs.git'
 
 target 'SampleApp' do
-  pod "Alooma-iOS"
+  pod "Alooma-iOS", :git => 'https://github.com/Aloomaio/iossdk.git', :branch => 'receive-ui-application-during-instantiation'
 end
