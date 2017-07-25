@@ -191,12 +191,10 @@ NS_ASSUME_NONNULL_BEGIN
  @param launchOptions   optional app delegate launchOptions
  @param flushInterval   interval to run background flushing
  @param url             your server url
- @param application     current application
  */
 - (instancetype)initWithToken:(NSString *)apiToken serverURL:(NSString*)url
                 launchOptions:(nullable NSDictionary *)launchOptions
-             andFlushInterval:(NSUInteger)flushInterval
-                  application:(nullable UIApplication *)application;
+             andFlushInterval:(NSUInteger)flushInterval;
 
 /*!
  @method
@@ -211,11 +209,9 @@ NS_ASSUME_NONNULL_BEGIN
  @param apiToken        your project token
  @param flushInterval   interval to run background flushing
  @param url             your server url
- @param application     current application
  */
 - (instancetype)initWithToken:(NSString *)apiToken serverURL:(NSString*)url
-             andFlushInterval:(NSUInteger)flushInterval
-                  application:(nullable UIApplication *)application;
+             andFlushInterval:(NSUInteger)flushInterval;
 
 /*!
  @property
