@@ -56,22 +56,19 @@ static Alooma *sharedInstance = nil;
 
 + (Alooma *)sharedInstanceWithToken:(NSString *)apiToken serverURL:(NSString *)url
                       launchOptions:(nullable NSDictionary *)launchOptions
-                        application:(nullable UIApplication *)application
 {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         sharedInstance = [[super alloc] initWithToken:apiToken serverURL:url
-                                        launchOptions:launchOptions andFlushInterval:60
-                                          application:application];
+                                        launchOptions:launchOptions andFlushInterval:60];
     });
     return sharedInstance;
 }
 
 + (Alooma *)sharedInstanceWithToken:(NSString *)apiToken serverURL:(NSString *)url
-                        application:(nullable UIApplication *)application
 {
-    return [Alooma sharedInstanceWithToken:apiToken serverURL:url launchOptions:nil
-                               application:application];
+    return [Alooma sharedInstanceWithToken:apiToken serverURL:url
+                             launchOptions:nil];
 }
 
 + (Alooma *)sharedInstance
@@ -85,7 +82,6 @@ static Alooma *sharedInstance = nil;
 - (instancetype)initWithToken:(NSString *)apiToken serverURL:(NSString *)url
                 launchOptions:(nullable NSDictionary *)launchOptions
              andFlushInterval:(NSUInteger)flushInterval
-                  application:(nullable UIApplication *)application
 {
     if (apiToken == nil) {
         apiToken = @"";
@@ -114,7 +110,18 @@ static Alooma *sharedInstance = nil;
         [_dateFormatter setTimeZone:[NSTimeZone timeZoneWithAbbreviation:@"UTC"]];
         [_dateFormatter setLocale:[[NSLocale alloc] initWithLocaleIdentifier:@"en_US_POSIX"]];
         self.timedEvents = [NSMutableDictionary dictionary];
-        _application = application;
+        _application = nil;
+
+#if !defined(ALOOMA_APP_EXTENSION)
+        SEL sharedApplicationSelector = @selector(sharedApplication);
+        Class UIApplicationClass = [UIApplication class];
+        if ([UIApplicationClass respondsToSelector:sharedApplicationSelector]) {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Warc-performSelector-leaks"
+            _application = [UIApplicationClass performSelector:sharedApplicationSelector];
+#pragma clang diagnostic pop
+        }
+#endif
 
         if (self.application) {
           [self setUpListeners];
@@ -130,10 +137,9 @@ static Alooma *sharedInstance = nil;
 
 - (instancetype)initWithToken:(NSString *)apiToken serverURL:(NSString *)url
              andFlushInterval:(NSUInteger)flushInterval
-                  application:(nullable UIApplication *)application
 {
     return [self initWithToken:apiToken serverURL:url launchOptions:nil
-              andFlushInterval:flushInterval application:application];
+              andFlushInterval:flushInterval];
 }
 
 - (void)dealloc

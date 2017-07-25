@@ -128,20 +128,8 @@ NS_ASSUME_NONNULL_BEGIN
  you using the given project token. When you want to make calls to Alooma
  elsewhere in your code, you can use <code>sharedInstance</code>.
 
- To enable easy intergration of the Alooma API in normal applications as well
- as widgets and watch apps, a modification was contributed to the Alooma
- library, enabling it to accept a pointer to the current application. This
- change replaces the previous method of setting the preprocessor flag
- ALOOMA_APP_EXTENSION which would cause the Alooma API to refrain from calling
- [UIApplication sharedApplication]. (The preprocessor flag required developers
- to perform some inconvenient configurations to include the Alooma API in a
- single project which compiles both an app and a widget).
- <b>This is a breaking change</b>
-
-
  <pre>
- [Alooma sharedInstanceWithToken:@"<token>" serverURL:@"inputs.alooma.com"
-                     application:[UIApplication sharedApplication]];
+ [Alooma sharedInstanceWithToken:@"<token>" serverURL:@"inputs.alooma.com"];
  [Alooma sharedInstance] track:@"Something Happened"]];
  </pre>
 
@@ -152,10 +140,8 @@ NS_ASSUME_NONNULL_BEGIN
 
  @param apiToken        your project token
  @param url             your server url
- @param application     current application
  */
-+ (Alooma *)sharedInstanceWithToken:(NSString *)apiToken serverURL:(NSString*)url
-                        application:(nullable UIApplication *)application;
++ (Alooma *)sharedInstanceWithToken:(NSString *)apiToken serverURL:(NSString*)url;
 
 /*!
  @method
@@ -175,9 +161,7 @@ NS_ASSUME_NONNULL_BEGIN
 
  */
 + (Alooma *)sharedInstanceWithToken:(NSString *)apiToken serverURL:(NSString*)url
-                      launchOptions:(nullable NSDictionary *)launchOptions
-                        application:(nullable UIApplication *)application;
-
+                      launchOptions:(nullable NSDictionary *)launchOptions;
 
 /*!
  @method
